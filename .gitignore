@@ -1,0 +1,6 @@
+.idea
+.gauge
+target
+logs
+reports
+*.iml
