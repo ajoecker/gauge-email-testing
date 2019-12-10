@@ -30,9 +30,7 @@ import static org.jsoup.Jsoup.parse;
 // based on https://developers.google.com/gmail/api/quickstart/java
 public class GMailHandler implements EmailHandler {
     private static final String USER = "me";
-    private static final String ZUGANGSDATEN_BESTAETIGEN = "zugangsdaten-bestaetigen";
-    private static final String PASSWORT_ZURUECKSETZEN = "passwort-zuruecksetzen";
-    private Gmail gmail;
+    private final Gmail gmail;
 
     public GMailHandler(Path tokenPath, String applicationName) {
         this.gmail = new GMailInitializer(tokenPath).service(applicationName).orElseThrow();
@@ -63,7 +61,7 @@ public class GMailHandler implements EmailHandler {
         }
     }
 
-    private Boolean failed(Exception e, String s) {
+    private boolean failed(Exception e, String s) {
         Logger.error(s, e);
         return false;
     }
@@ -76,7 +74,7 @@ public class GMailHandler implements EmailHandler {
                     .await().atMost(Duration.TWO_MINUTES)
                     .until(() -> queryMessages(query), emails -> !emails.isEmpty());
         } catch (Exception e) {
-            Logger.warn("no messages found in time periode", e);
+            Logger.warn("no messages found in time period", e);
             return List.of();
         }
     }
@@ -125,7 +123,7 @@ public class GMailHandler implements EmailHandler {
         } else if (bodyPart.isMimeType("text/html")) {
             return parse(bodyPart.getContent().toString()).text();
         } else if (bodyPart.isMimeType("application/pdf")) {
-            Logger.info("found attachement pdf");
+            Logger.info("found attachment pdf");
         } else if (bodyPart.getContent() instanceof MimeMultipart) {
             return parseEmail((MimeMultipart) bodyPart.getContent());
         }
