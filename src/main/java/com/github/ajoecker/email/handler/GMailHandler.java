@@ -82,21 +82,10 @@ public class GMailHandler implements EmailHandler {
     }
 
     @Override
-    public String getAccountVerificationLink(String messageId) {
-        String linkFromEmail = getLinkFromEmail(messageId, ZUGANGSDATEN_BESTAETIGEN);
-        linkFromEmail = linkFromEmail.replace(ZUGANGSDATEN_BESTAETIGEN, "email-verifizieren");
-        return linkFromEmail;
-    }
-
-    @Override
-    public String getPasswordForgottenLink(String messageId) {
-        return getLinkFromEmail(messageId, PASSWORT_ZURUECKSETZEN);
-    }
-
-    @Override
     public String getLinkFromEmail(String messageId, String linkSubText) {
         Logger.info("retrieving link with text '{}' from {}", linkSubText, messageId);
-        return parseLink(getRawEmail(gmail, messageId), linkSubText).trim();
+        String rawEmail = getRawEmail(gmail, messageId);
+        return parseLink(rawEmail, linkSubText).trim();
     }
 
     private String parseLink(String text, String linkSubText) {
@@ -112,8 +101,7 @@ public class GMailHandler implements EmailHandler {
         return new Email(messageId, rawEmail);
     }
 
-    // test-friendly
-    protected String getRawEmail(Gmail gmail, String messageId) {
+    private String getRawEmail(Gmail gmail, String messageId) {
         try {
             Message message = gmail.users().messages().get(USER, messageId).setFormat("raw").execute();
             Logger.info("retrieving html email from {}", message.getId());

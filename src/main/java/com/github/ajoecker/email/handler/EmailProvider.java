@@ -10,6 +10,7 @@ public enum EmailProvider {
             return new GMailHandler();
         }
     };
+
     public abstract EmailHandler handler();
 
     public static EmailHandler from(String emailHandler) {

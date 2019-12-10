@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.ajoecker</groupId>
     <artifactId>gauge-email-testing</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.1-SNAPSHOT</version>
 
     <name>Library to automate email testing</name>
     <description>Library to automate email testing</description>

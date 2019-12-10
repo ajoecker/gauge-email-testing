@@ -58,22 +58,6 @@ public interface EmailHandler {
     String getLinkFromEmail(String messageId, String linkSubText);
 
     /**
-     * Returns the link to reset one's password.
-     *
-     * @param messageId the email to get the link of
-     * @return the password reset link
-     */
-    String getPasswordForgottenLink(String messageId);
-
-    /**
-     * Returns the link to verify one's account.
-     *
-     * @param messageId the email to get the link of
-     * @return the account verification link
-     */
-    String getAccountVerificationLink(String messageId);
-
-    /**
      * Query the handler with the given query and checks whether there is exactly one message for that query found.
      * <p>
      * If no message or more than one, a {@link IllegalStateException} is thrown
