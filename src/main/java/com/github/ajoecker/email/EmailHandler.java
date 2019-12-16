@@ -13,7 +13,6 @@ public interface EmailHandler {
      *
      * @param query query to search for {@link Email}s
      * @return found matches or empty list. The list contains only the message ids, no content.
-     * To retrieve the content see {@link #getMessage(String)}
      */
     List<String> getMessages(String query);
 
@@ -58,6 +57,14 @@ public interface EmailHandler {
     String getLinkFromEmail(String messageId, String linkSubText);
 
     /**
+     * Returns the subject of the email, identified by the id.
+     *
+     * @param messageId the message id
+     * @return the subject or an empty string
+     */
+    String getSubject(String messageId);
+
+    /**
      * Query the handler with the given query and checks whether there is exactly one message for that query found.
      * <p>
      * If no message or more than one, a {@link IllegalStateException} is thrown
@@ -73,18 +80,10 @@ public interface EmailHandler {
             throw new IllegalStateException("at most one message shall be found for " + query + ", but was " + messages.size());
         }
         String currentEmailId = messages.iterator().next();
-        Logger.info("current person id: {}", currentEmailId);
+        Logger.info("current email id: {}", currentEmailId);
         if (markRead(currentEmailId)) {
             Logger.info("email {} marked as read", currentEmailId);
         }
         return currentEmailId;
     }
-
-    /**
-     * Returns the message of the given id with content
-     *
-     * @param messageId the email id
-     * @return the complete email
-     */
-    Email getMessage(String messageId);
 }
