@@ -39,10 +39,6 @@ public class GMailHandler implements EmailHandler {
         this.gmail = new GMailInitializer(tokenPath).service(applicationName).orElseThrow();
     }
 
-    public GMailHandler() {
-        this(Paths.get(System.getenv("GAUGE_PROJECT_ROOT"), "tokens"), System.getenv("email.application"));
-    }
-
     @Override
     public boolean delete(String messageId) {
         try {
@@ -90,7 +86,7 @@ public class GMailHandler implements EmailHandler {
     }
 
     private String parseLink(String text, String linkSubText) {
-        String regex = "(https.+" + linkSubText + ".+)\\s";
+        String regex = "(https?.+" + linkSubText + ".+)\\s";
         Logger.info("parse link from with {}", regex);
         Pattern compile = Pattern.compile(regex);
         return compile.matcher(text).results().findFirst().map(MatchResult::group).orElse("");
