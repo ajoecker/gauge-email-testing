@@ -1,24 +1,36 @@
 package com.github.ajoecker.email.handler;
 
 import com.github.ajoecker.email.EmailHandler;
-import org.tinylog.Logger;
 
-public enum EmailProvider {
-    GMAIL {
-        @Override
-        public EmailHandler handler() {
-            return new GMailHandler();
-        }
-    };
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-    public abstract EmailHandler handler();
+public final class EmailProvider {
+    private String application;
+    private Path token;
 
-    public static EmailHandler from(String emailHandler) {
-        Logger.info("using {} as email handler", emailHandler);
-        if (emailHandler == null || emailHandler.equals("")) {
-            Logger.warn("no email provider configured, using default 'Gmail'");
-            return GMAIL.handler();
-        }
-        return EmailProvider.valueOf(emailHandler.toUpperCase()).handler();
+    private EmailProvider() {
+    }
+
+    public static EmailProvider newProvider() {
+        return new EmailProvider();
+    }
+
+    public EmailProvider application(String application) {
+        this.application = application;
+        return this;
+    }
+
+    public EmailProvider token(Path token) {
+        this.token = token;
+        return this;
+    }
+
+    public EmailProvider token(String token) {
+        return token(Paths.get(token));
+    }
+
+    public EmailHandler done() {
+        return new GMailHandler(token, application);
     }
 }

@@ -4,6 +4,8 @@ import com.github.ajoecker.email.Email;
 import com.github.ajoecker.email.EmailHandler;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePart;
+import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.api.services.gmail.model.ModifyMessageRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.awaitility.Awaitility;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
@@ -34,10 +37,6 @@ public class GMailHandler implements EmailHandler {
 
     public GMailHandler(Path tokenPath, String applicationName) {
         this.gmail = new GMailInitializer(tokenPath).service(applicationName).orElseThrow();
-    }
-
-    public GMailHandler() {
-        this(Paths.get(System.getenv("GAUGE_PROJECT_ROOT"), "tokens"), System.getenv("email.application"));
     }
 
     @Override
@@ -87,24 +86,32 @@ public class GMailHandler implements EmailHandler {
     }
 
     private String parseLink(String text, String linkSubText) {
-        String regex = "(https.+" + linkSubText + ".+)\\s";
+        String regex = "(https?.+" + linkSubText + ".+)\\s";
         Logger.info("parse link from with {}", regex);
         Pattern compile = Pattern.compile(regex);
         return compile.matcher(text).results().findFirst().map(MatchResult::group).orElse("");
     }
 
     @Override
-    public Email getMessage(String messageId) {
-        String rawEmail = getRawEmail(gmail, messageId);
-        return new Email(messageId, rawEmail);
+    public String getSubject(String messageId) {
+        try {
+            Message message1 = gmail.users().messages().get(USER, messageId).execute();
+            return message1.getPayload().getHeaders().stream()
+                    .filter(messagePartHeader -> messagePartHeader.getName().equals("Subject"))
+                    .map(MessagePartHeader::getValue)
+                    .findFirst().orElse("");
+        } catch (IOException e) {
+            Logger.error(e, "failed to retrieve subject from email " + messageId);
+            return "";
+        }
     }
 
     private String getRawEmail(Gmail gmail, String messageId) {
         try {
-            Message message = gmail.users().messages().get(USER, messageId).setFormat("raw").execute();
-            Logger.info("retrieving html email from {}", message.getId());
+            Message rawMessage = gmail.users().messages().get(USER, messageId).setFormat("raw").execute();
+            Logger.info("retrieving html email from {}", rawMessage.getId());
             Base64 base64 = new Base64(true);
-            byte[] bytes = base64.decode(message.getRaw());
+            byte[] bytes = base64.decode(rawMessage.getRaw());
             Session session = Session.getDefaultInstance(new Properties(), null);
             try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
                 MimeMessage mimeMessage = new MimeMessage(session, bais);
@@ -112,6 +119,7 @@ public class GMailHandler implements EmailHandler {
             }
         } catch (IOException | MessagingException e) {
             Logger.error("failed to retrieve email " + messageId, e);
+            e.printStackTrace();
             return "";
         }
     }
